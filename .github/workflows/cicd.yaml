@@ -71,6 +71,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
+      - name: Set up Kubernetes cluster (Kind)
+        uses: helm/kind-action@v1
+        with:
+          version: 'v0.22.0'
+      
+      - name: Check cluster status
+        run: |
+          kubectl cluster-info
+          kubectl get nodes
+
       - name: Update K8s manifests
         run: |
           sed -i "s|GITHUB_SHA|${{ github.sha }}|g" k8s/deployment.yaml
@@ -83,7 +93,23 @@ jobs:
           echo "✅ K8s manifests updated"
           echo ""
           echo "To deploy to your cluster, run:"
-          echo "  kubectl apply -f k8s/deployment.yaml"
-          echo "  kubectl apply -f k8s/service.yaml"
-          echo ""
-          echo "Or download artifacts and apply manually"
+          kubectl cluster-info
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
+          
+      - name: Wait for Deployment Rollout
+        run: |
+          kubectl rollout status deployment/${{ env.K8S_DEPLOYMENT }} --timeout=120s
+
+      - name: Get Deployed SHA Version
+        run: |
+          # 1. Lance le port-forward en arrière-plan
+          kubectl port-forward svc/cicd-demo 3000:80 &
+          
+          # 2. Laisse le temps au tunnel de s'établir (très important en CI)
+          sleep 3
+          
+          # 3. Interroge l'API et extrait la version avec jq
+          DEPLOYED=$(curl -s http://localhost:3000/)
+          
+          echo "Deployed version: $DEPLOYED"
