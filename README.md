@@ -1,6 +1,6 @@
 # CI/CD Demo Project
 
-This repository demonstrates a CI/CD pipeline for deploying a containerized application to a Kubernetes cluster. The pipeline automates testing, building, and deploying the application using GitHub Actions.
+This repository demonstrates a CI/CD pipeline for deploying a containerized application to a Kubernetes cluster. The pipeline automates testing, building, and deploying the application using GitHub Actions. Additionally, it includes support for GitOps deployment using ArgoCD.
 
 ---
 
@@ -9,6 +9,7 @@ This repository demonstrates a CI/CD pipeline for deploying a containerized appl
 - **CI/CD Pipeline**: Automates testing, building Docker images, and deploying to Kubernetes.
 - **Kubernetes Deployment**: Manages application deployment and service configuration.
 - **Docker Integration**: Builds and pushes Docker images to Docker Hub.
+- **GitOps with ArgoCD**: Synchronizes Kubernetes manifests with the cluster automatically.
 - **Environment Variables**: Uses GitHub Secrets for secure configuration.
 - **Rollout Management**: Waits for successful Kubernetes deployment rollouts.
 
@@ -25,6 +26,7 @@ Before using this project, ensure you have the following:
    - `DOCKERHUB_USERNAME`: Your Docker Hub username.
    - `DOCKERHUB_TOKEN`: Your Docker Hub access token.
    - `KUBECONFIG`: The kubeconfig file for your Kubernetes cluster.
+5. **ArgoCD**: Installed and configured on your Kubernetes cluster.
 
 ---
 
@@ -33,11 +35,14 @@ Before using this project, ensure you have the following:
 - **`cicd.yaml`**: GitHub Actions workflow file for CI/CD.
 - **`deployment.yaml`**: Kubernetes manifest for deploying the application.
 - **`service.yaml`**: Kubernetes manifest for exposing the application as a service.
+- **`application.yaml`**: ArgoCD application manifest for GitOps deployment.
 - **Application Code**: The source code for the application (e.g., `app.js`, `main.py`).
 
 ---
 
 ## How It Works
+
+### CI/CD Pipeline
 
 1. **Pipeline Triggers**:
    - The pipeline runs on `push` or `pull_request` events to the `master` branch.
@@ -55,9 +60,16 @@ Before using this project, ensure you have the following:
 
 ---
 
-## Usage
+### GitOps with ArgoCD
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/your-username/cicd-demo.git
-cd cicd-demo
+ArgoCD is used to manage the deployment of this application using GitOps principles. It ensures that the Kubernetes cluster is always synchronized with the manifests stored in this repository.
+
+#### Steps to Use ArgoCD:
+
+1. **Install ArgoCD**:
+   Follow the [official ArgoCD installation guide](https://argo-cd.readthedocs.io/en/stable/getting_started/) to install ArgoCD on your Kubernetes cluster in the 'argocd' namespace.
+
+2. **Apply the ArgoCD Application Manifest**:
+   Use the `application.yaml` file in this repository to configure ArgoCD to manage the application:
+   ```bash
+   kubectl apply -f application.yaml -n argocd
